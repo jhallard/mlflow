@@ -33,7 +33,7 @@ RUN curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.s
 RUN bash ./miniconda.sh -b -p /miniconda && rm ./miniconda.sh
 ENV PATH="/miniconda/bin:$PATH"
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-ENV GUNICORN_CMD_ARGS="--timeout 60 -k gevent"
+ENV GUNICORN_CMD_ARGS="--timeout 0 -k gevent"
 # Set up the program in the image
 WORKDIR /opt/mlflow
 
@@ -49,11 +49,12 @@ def _get_mlflow_install_step(dockerfile_context_dir, mlflow_home):
     Get docker build commands for installing MLflow given a Docker context dir and optional source
     directory
     """
+
     if mlflow_home:
         mlflow_dir = _copy_project(src_path=mlflow_home, dst_path=dockerfile_context_dir)
         return (
             "COPY {mlflow_dir} /opt/mlflow\n"
-            "RUN pip install /opt/mlflow\n"
+            "RUN pip install /opt/mlflow && pip install protobuf==3.20.1\n"
             "RUN cd /opt/mlflow/mlflow/java/scoring && "
             "mvn --batch-mode package -DskipTests && "
             "mkdir -p /opt/java/jars && "
@@ -62,6 +63,7 @@ def _get_mlflow_install_step(dockerfile_context_dir, mlflow_home):
         ).format(mlflow_dir=mlflow_dir)
     else:
         return (
+            "RUN pip install protobuf==3.20.1\n"
             "RUN pip install mlflow=={version}\n"
             "RUN mvn "
             " --batch-mode dependency:copy"

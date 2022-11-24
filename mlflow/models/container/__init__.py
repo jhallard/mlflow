@@ -110,7 +110,7 @@ def _install_pyfunc_deps(model_path=None, install_mlflow=False, enable_mlserver=
     activate_cmd = ["source /miniconda/bin/activate custom_env"] if has_env else []
     # NB: install gunicorn[gevent] from pip rather than from conda because gunicorn is already
     # dependency of mlflow on pip and we expect mlflow to be part of the environment.
-    server_deps = ["gunicorn[gevent]"]
+    server_deps = ["gunicorn[gevent]", "protobuf==3.20.0"]
     if enable_mlserver:
         server_deps = ["mlserver", "mlserver-mlflow"]
 
